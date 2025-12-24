@@ -1,10 +1,8 @@
 # Forge Agent Builder Frontend
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15-blue.svg)](https://nextjs.org/)
 
-A modern AI chatbot frontend built with Next.js 15 and React 19, powered by Vercel AI SDK and OpenAI API. Seamlessly integrates with Model Context Protocol (MCP) servers for extensible tool support, enabling AI agents to interact with external tools and data sources.
+A **modern AI chatbot frontend** built with **Next.js** 15 and **React** 19, powered by **Vercel AI SDK** and **OpenAI API**. Seamlessly integrates with Model Context Protocol (MCP) servers for extensible tool support, enabling AI agents to interact with external tools and data sources.
 
 ## Table of Contents
 
