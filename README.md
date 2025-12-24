@@ -1,228 +1,172 @@
-# Next.js MCP Chatbot
+# Forge Agent Builder Frontend
 
-A Next.js AI chatbot application powered by the Vercel AI SDK with Model Context Protocol (MCP) server integration.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-blue.svg)](https://nextjs.org/)
+
+A modern AI chatbot frontend built with Next.js 15 and React 19, powered by OpenAI GPT-5 Mini and the Vercel AI SDK. Seamlessly integrates with Model Context Protocol (MCP) servers for extensible tool support, enabling AI agents to interact with external tools and data sources.
+
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Commands](#commands)
+- [Technologies Used](#technologies-used)
+- [Development Notes](#development-notes)
 
 ## Features
 
-- 🤖 AI-powered chatbot using OpenAI GPT-4
-- 🔌 MCP server integration ready (configurable for extensible tool support)
-- ⚡ Real-time streaming responses
-- 🎨 Modern UI with Tailwind CSS
-- 🛠️ Configurable via JSON configuration file
-- 📦 Built with Next.js 15 and React 19
+- 🤖 **AI-Powered Chatbot**: Built with OpenAI GPT-5 Mini for intelligent conversations
+- 🔌 **MCP Server Integration**: Connect with Model Context Protocol servers for extensible tool support
+- ⚡ **Real-Time Streaming**: Message responses stream in real-time for responsive UX
+- 🎨 **Modern UI**: Clean, responsive interface built with Tailwind CSS
+- 🛠️ **Configurable**: JSON-based configuration for MCP servers and LLM settings
+- 📦 **Production-Ready**: Built on Next.js 15 with React 19 and TypeScript
+- 💾 **Stateful Conversations**: Maintain conversation history with chat management features
+- 🔧 **Tool Support**: AI can invoke external tools through MCP servers
 
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js 18.x or later
-- npm or yarn
+- npm or yarn package manager
 - OpenAI API key
-- An MCP server (optional - see MCP Integration section)
+- (Optional) An MCP server for extended functionality
 
-### Installation
+## Installation
 
-1. Install dependencies:
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/scanady/forge-agent-builder-frontend.git
+cd forge-agent-builder-frontend
+```
+
+### Step 2: Install Dependencies
 
 ```bash
 npm install
 ```
 
-2. Create a `.env.local` file with your API keys:
+### Step 3: Configure Environment Variables
+
+Create a `.env.local` file in the project root with your API keys:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and add your OpenAI API key:
+Edit `.env.local` and add your configuration:
 
-```
-OPENAI_API_KEY=your_api_key_here
+```env
+OPENAI_API_KEY=your_openai_api_key_here
 MCP_CONFIG_PATH=mcp.config.json
 ```
 
-3. Configure your MCP server in `mcp.config.json`:
+### Step 4: Configure MCP Server (Optional)
+
+If you want to use MCP tools, configure your server in `mcp.config.json`:
 
 ```json
 {
   "mcpServers": {
-    "example-server": {
-      "command": "node",
-      "args": ["path/to/your/mcp-server.js"],
-      "env": {
-        "API_KEY": "your-api-key"
-      },
-      "description": "Example MCP server configuration"
+    "requirements-analyst": {
+      "transport": "streamable-http",
+      "url": "http://localhost:8000/mcp",
+      "timeout": 120000,
+      "description": "Requirements Analyst - MCP Server for requirements elicitation and analysis"
     }
   },
-  "defaultServer": "example-server"
+  "defaultServer": "requirements-analyst"
 }
 ```
 
-### Running the Application
+## Usage
 
-Development mode:
+Start the application in development mode:
 
 ```bash
 npm run dev
 ```
 
-Production build:
+Open [http://localhost:3000](http://localhost:3000) in your browser. You can now:
+
+- Send messages and receive AI-powered responses
+- View real-time streaming of responses
+- Start new conversations using the sidebar
+- Clear conversation history as needed
+
+For production deployment:
 
 ```bash
 npm run build
 npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the chatbot interface.
+## Configuration
 
-## MCP Integration
+### Environment Variables
 
-### What is MCP?
+Create a `.env.local` file with the following variables:
 
-Model Context Protocol (MCP) is a standard for connecting AI applications with external tools and data sources. This chatbot is designed to integrate with MCP servers to extend its capabilities.
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `OPENAI_API_KEY` | Your OpenAI API key | `sk-...` |
+| `MCP_CONFIG_PATH` | Path to MCP configuration file | `mcp.config.json` |
 
-### Setting Up MCP Tools
+### LLM Configuration
 
-The application currently runs without MCP tools but is fully prepared for integration. To enable MCP tools:
-
-1. **Configure your MCP server** in `mcp.config.json` with the correct command and arguments
-2. **Enable MCP integration** in [app/api/chat/route.ts](app/api/chat/route.ts#L9-L13) by uncommenting the MCP client code:
+Edit [lib/llm-config.ts](lib/llm-config.ts) to customize the language model:
 
 ```typescript
-// Uncomment these lines to enable MCP:
-const mcpClient = await getMCPClient();
-const mcpTools = await mcpClient.listTools();
+export const LLM_CONFIG = {
+  model: 'gpt-5-mini',
+  displayName: 'GPT-5 Mini',
+} as const;
 ```
 
-3. **Add tool conversion logic** to convert MCP tools to Vercel AI SDK format (see the commented code in the route file)
+## Commands
 
-### Example MCP Server
+```bash
+# Development server (with hot reload)
+npm run dev
 
-You can create a simple MCP server or use existing ones. Here's a basic example structure:
+# Production build
+npm run build
 
-```javascript
-// Simple MCP server that responds to JSON-RPC requests
-const readline = require('readline');
+# Start production server
+npm start
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false
-});
-
-rl.on('line', (line) => {
-  try {
-    const request = JSON.parse(line);
-    
-    if (request.method === 'initialize') {
-      console.log(JSON.stringify({
-        jsonrpc: '2.0',
-        id: request.id,
-        result: {
-          protocolVersion: '2024-11-05',
-          serverInfo: { name: 'example-server', version: '1.0.0' }
-        }
-      }));
-    } else if (request.method === 'tools/list') {
-      console.log(JSON.stringify({
-        jsonrpc: '2.0',
-        id: request.id,
-        result: {
-          tools: [
-            {
-              name: 'get_weather',
-              description: 'Get the weather for a location',
-              inputSchema: {
-                type: 'object',
-                properties: {
-                  location: { type: 'string', description: 'The city name' }
-                },
-                required: ['location']
-              }
-            }
-          ]
-        }
-      }));
-    }
-  } catch (e) {
-    console.error('Error:', e);
-  }
-});
+# Lint code with ESLint
+npm run lint
 ```
-
-## MCP Configuration
-
-The application uses a `mcp.config.json` file to configure MCP servers. Each server configuration includes:
-
-- **command**: The command to start the MCP server (e.g., `node`, `python`, `npx`)
-- **args**: Command-line arguments for the server
-- **env**: Environment variables to pass to the server
-- **description**: Human-readable description of the server
-
-You can configure multiple MCP servers and specify which one to use as the default.
-
-## Project Structure
-
-```
-├── app/
-│   ├── api/
-│   │   └── chat/
-│   │       └── route.ts       # Chat API endpoint (MCP integration point)
-│   ├── layout.tsx             # Root layout
-│   ├── page.tsx               # Main chat interface
-│   └── globals.css            # Global styles
-├── lib/
-│   ├── mcp-client.ts          # MCP client implementation
-│   └── mcp-config.ts          # MCP configuration loader
-├── types/
-│   └── mcp.ts                 # TypeScript types for MCP
-├── mcp.config.json            # MCP server configuration
-├── .env.local                 # Environment variables (create from .env.example)
-├── next.config.js             # Next.js configuration
-├── tsconfig.json              # TypeScript configuration
-├── tailwind.config.js         # Tailwind CSS configuration
-└── package.json               # Project dependencies
-```
-
-## How It Works
-
-1. **User Interface**: React-based chat interface with real-time message streaming
-2. **API Route**: Next.js API route handles chat requests
-3. **AI Processing**: Messages are sent to OpenAI's GPT-4 via the Vercel AI SDK
-4. **MCP Integration** (when enabled): 
-   - Connects to configured MCP servers
-   - Fetches available tools
-   - AI can call tools through the MCP server
-   - Results are incorporated into the conversation
-5. **Streaming Response**: Responses stream back to the UI in real-time
 
 ## Technologies Used
 
-- **Next.js 15**: React framework with App Router
-- **Vercel AI SDK**: For AI integration and streaming
-- **OpenAI**: GPT-4 language model
-- **TypeScript**: Type-safe development
-- **Tailwind CSS**: Utility-first CSS framework
-- **Model Context Protocol**: For extensible tool integration
+| Technology | Purpose |
+|-----------|---------|
+| **Next.js 15** | React framework with App Router for server-side rendering |
+| **React 19** | UI library for building interactive components |
+| **TypeScript** | Type-safe JavaScript for better development experience |
+| **Vercel AI SDK** | SDK for AI integration and streaming responses |
+| **OpenAI** | GPT-5 Mini language model for conversational AI |
+| **Tailwind CSS** | Utility-first CSS framework for styling |
+| **Model Context Protocol** | Standard protocol for AI-tool integration |
+| **Radix UI** | Headless UI components for accessibility |
+| **React Markdown** | Markdown rendering with GitHub Flavored Markdown support |
 
 ## Development Notes
 
-### Adding MCP Tool Support
+### Extending MCP Capabilities
 
-To fully enable MCP tool support:
+1. Create or configure your MCP server
+2. Update [mcp.config.json](mcp.config.json) with the server details
+3. The tools are automatically discovered and made available to the AI
 
-1. Uncomment the MCP client code in `app/api/chat/route.ts`
-2. Add the tool conversion logic (see the git history for the full implementation)
-3. Install the `zod` package if not already installed (already in package.json)
-4. Test with your MCP server
+---
 
-### Debugging MCP Connections
+**Current Branch**: `master` | **Default Branch**: `main`
 
-- Check the server console for MCP server error messages
-- Verify your MCP server is responding to JSON-RPC requests
-- Test your MCP server independently before integrating
-
-## License
-
-MIT
+For more information, see [docs/MCP_INTEGRATION.md](docs/MCP_INTEGRATION.md).
